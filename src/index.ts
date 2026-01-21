@@ -1,5 +1,7 @@
-import { makeTownsBot } from '@towns-protocol/bot'
+import { getSmartAccountFromUserId, makeTownsBot } from '@towns-protocol/bot'
+import { hexToBytes, isAddress } from 'viem'
 import commands from './commands'
+import { buildPaymentInteractionFromMessage, shouldHandlePaymentMessage } from './payments'
 
 const bot = await makeTownsBot(process.env.APP_PRIVATE_DATA!, process.env.JWT_SECRET!, {
     commands,
@@ -25,20 +27,45 @@ bot.onSlashCommand('time', async (handler, { channelId }) => {
     await handler.sendMessage(channelId, `Current time: ${currentTime} ⏰`)
 })
 
-bot.onMessage(async (handler, { message, channelId, eventId, createdAt }) => {
-    if (message.includes('hello')) {
-        await handler.sendMessage(channelId, 'Hello there! 👋')
+bot.onMessage(async (handler, event) => {
+    const { channelId, message } = event
+
+    if (!shouldHandlePaymentMessage(event)) return
+
+    // Requirements: resolve recipient from event.mentions[0].userId (do not ask for wallet addresses)
+    const recipientUserId = event.mentions?.[0]?.userId
+    if (!recipientUserId || !isAddress(recipientUserId)) {
+        await handler.sendMessage(
+            channelId,
+            'To send funds, mention a recipient (e.g. `send 0.0001 ETH to @Cris`).',
+        )
         return
     }
-    if (message.includes('ping')) {
-        const now = new Date()
-        await handler.sendMessage(channelId, `Pong! 🏓 ${now.getTime() - createdAt.getTime()}ms`)
+
+    const recipientSmartAccount = await getSmartAccountFromUserId(bot, { userId: recipientUserId as `0x${string}` })
+    if (!recipientSmartAccount) {
+        await handler.sendMessage(channelId, 'I could not resolve that user’s Towns smart account on Base.')
         return
     }
-    if (message.includes('react')) {
-        await handler.sendReaction(channelId, eventId, '👍')
+
+    const interaction = await buildPaymentInteractionFromMessage(bot, {
+        message,
+        senderUserId: event.userId,
+        eventId: event.eventId,
+        recipient: {
+            userId: recipientUserId,
+            displayName: event.mentions?.[0]?.displayName,
+            smartAccount: recipientSmartAccount,
+        },
+    })
+
+    if (!interaction.ok) {
+        await handler.sendMessage(channelId, interaction.error)
         return
     }
+
+    // Requirements: user-signed interaction request, signer is the message author (event.userId)
+    await handler.sendInteractionRequest(channelId, interaction.request, hexToBytes(event.userId as `0x${string}`))
 })
 
 bot.onReaction(async (handler, { reaction, channelId }) => {
