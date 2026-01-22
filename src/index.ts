@@ -33,8 +33,12 @@ bot.onMessage(async (handler, event) => {
     if (!shouldHandlePaymentMessage(event)) return
 
     // Requirements: resolve recipient from event.mentions[0].userId (do not ask for wallet addresses)
-    const recipientUserId = event.mentions?.[0]?.userId
-    if (!recipientUserId || !isAddress(recipientUserId)) {
+    // In channels, users may mention the bot AND the recipient; ensure we pick the recipient (not the bot).
+    const recipientUserId = event.mentions
+        ?.map((m) => m.userId)
+        .find((id) => isAddress(id) && id.toLowerCase() !== bot.botId.toLowerCase())
+
+    if (!recipientUserId) {
         await handler.sendMessage(
             channelId,
             'To send funds, mention a recipient (e.g. `send 0.0001 ETH to @Cris`).',
@@ -54,7 +58,7 @@ bot.onMessage(async (handler, event) => {
         eventId: event.eventId,
         recipient: {
             userId: recipientUserId,
-            displayName: event.mentions?.[0]?.displayName,
+            displayName: event.mentions?.find((m) => m.userId.toLowerCase() === recipientUserId.toLowerCase())?.displayName,
             smartAccount: recipientSmartAccount,
         },
     })
@@ -75,4 +79,6 @@ bot.onReaction(async (handler, { reaction, channelId }) => {
 })
 
 const app = bot.start()
+// Render / uptime healthcheck endpoint
+app.get('/health', (c) => c.json({ status: 'ok' }))
 export default app

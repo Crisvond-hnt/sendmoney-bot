@@ -1,0 +1,19 @@
+services:
+  - type: web
+    name: sendmoney-bot
+    runtime: node
+    plan: starter
+    autoDeploy: true
+    buildCommand: npm install && npm run build
+    startCommand: npm run start
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      # Set these in the Render dashboard as "Secret" values:
+      # - APP_PRIVATE_DATA
+      # - JWT_SECRET
+      # Optional:
+      # - BASE_RPC_URL
+      # - BOT_NAME
+      # - BASE_URL (your Render service URL, used in Towns Developer Portal)

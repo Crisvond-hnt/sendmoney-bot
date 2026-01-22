@@ -2,15 +2,18 @@
   "name": "speedrun",
   "version": "0.0.1",
   "type": "module",
-  "main": "src/index.ts",
+  "main": "dist/server.js",
   "scripts": {
-    "build": "tsc --noEmit",
+    "build": "tsc",
     "clean": "rm -rf dist",
-    "dev": "bun run --watch src/index.ts",
+    "dev": "bun run --watch src/server.ts",
     "lint": "eslint --format unix ./src  --max-warnings=0",
     "lint:fix": "eslint --format unix ./src  --max-warnings=0 --fix",
-    "start": "bun run src/index.ts",
+    "start": "node dist/server.js",
     "typecheck": "tsc --noEmit"
+  },
+  "engines": {
+    "node": ">=20"
   },
   "dependencies": {
     "@connectrpc/connect-node": "^2.1.0",
