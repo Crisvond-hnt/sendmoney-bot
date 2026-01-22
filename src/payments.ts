@@ -241,7 +241,7 @@ async function resolveErc20OnBase(bot: BotWithViem, tokenInput: string): Promise
     const trimmed = tokenInput.trim()
 
     if (isAddress(trimmed)) {
-        const address = trimmed as `0x${string}`
+        const address = trimmed
         const decimals = await readContract(bot.viem, { address, abi: erc20Abi, functionName: 'decimals' })
         let symbol: string | undefined
         try {
@@ -292,11 +292,11 @@ async function get0xBaseTokenList(): Promise<TokenListResult> {
 
         const map = new Map<string, { address: `0x${string}`; decimals: number; symbol: string }>()
         for (const t of tokens) {
-            const symbol = String(t.symbol ?? '').toUpperCase()
-            const address = String(t.address ?? '')
+            const symbol = typeof t.symbol === 'string' ? t.symbol.toUpperCase() : ''
+            const address = typeof t.address === 'string' ? t.address : ''
             const decimals = Number(t.decimals)
             if (!symbol || !isAddress(address) || !Number.isFinite(decimals)) continue
-            map.set(symbol, { symbol, address: address as `0x${string}`, decimals })
+            map.set(symbol, { symbol, address, decimals })
         }
 
         tokenListCache = { fetchedAt: now, map }

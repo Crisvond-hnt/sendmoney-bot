@@ -1,11 +1,11 @@
 services:
   - type: web
     name: sendmoney-bot
-    runtime: node
+    runtime: bun
     plan: starter
     autoDeploy: true
-    buildCommand: npm install && npm run build
-    startCommand: npm run start
+    buildCommand: bun install
+    startCommand: bun run start
     healthCheckPath: /health
     envVars:
       - key: NODE_ENV

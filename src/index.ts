@@ -36,7 +36,7 @@ bot.onMessage(async (handler, event) => {
     // In channels, users may mention the bot AND the recipient; ensure we pick the recipient (not the bot).
     const recipientUserId = event.mentions
         ?.map((m) => m.userId)
-        .find((id) => isAddress(id) && id.toLowerCase() !== bot.botId.toLowerCase())
+        .find((id) => isAddress(id) && id.toLowerCase() !== bot.botId.toLowerCase()) as `0x${string}` | undefined
 
     if (!recipientUserId) {
         await handler.sendMessage(
@@ -46,7 +46,7 @@ bot.onMessage(async (handler, event) => {
         return
     }
 
-    const recipientSmartAccount = await getSmartAccountFromUserId(bot, { userId: recipientUserId as `0x${string}` })
+    const recipientSmartAccount = await getSmartAccountFromUserId(bot, { userId: recipientUserId })
     if (!recipientSmartAccount) {
         await handler.sendMessage(channelId, 'I could not resolve that user’s Towns smart account on Base.')
         return
@@ -69,7 +69,7 @@ bot.onMessage(async (handler, event) => {
     }
 
     // Requirements: user-signed interaction request, signer is the message author (event.userId)
-    await handler.sendInteractionRequest(channelId, interaction.request, hexToBytes(event.userId as `0x${string}`))
+    await handler.sendInteractionRequest(channelId, interaction.request, hexToBytes(event.userId))
 })
 
 bot.onReaction(async (handler, { reaction, channelId }) => {

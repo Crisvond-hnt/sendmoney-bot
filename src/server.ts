@@ -11,7 +11,8 @@ if (bun?.serve) {
     console.log(`Listening on http://localhost:${port}`)
 } else {
     // Node runtime (Render) support
-    const server = createServer(async (req, res) => {
+    const server = createServer((req, res) => {
+        void (async () => {
         try {
             const origin = `http://${req.headers.host || `localhost:${port}`}`
             const url = new URL(req.url || '/', origin)
@@ -66,6 +67,7 @@ if (bun?.serve) {
             res.statusCode = 500
             res.end('Internal Server Error')
         }
+        })()
     })
 
     server.listen(port, () => {

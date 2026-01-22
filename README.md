@@ -63,18 +63,18 @@ Important: if your bot is configured for **Mentions/Commands** message behavior,
 
 # Deploy to Render
 
-This repo is set up for Render using **Node 20+**:
+This repo is set up for Render using **Bun**:
 
-- Build: `npm run build` (compiles TypeScript to `dist/`)
-- Start: `npm run start` (runs `node dist/server.js`)
+- Build: `bun install`
+- Start: `bun run start` (runs `src/server.ts` directly)
 - Health check: `GET /health`
 
 ## Render Steps
 
 1. Create a new **Web Service** on Render from this GitHub repo.
 2. Render will detect `render.yaml`, or you can set:
-   - Build Command: `npm install && npm run build`
-   - Start Command: `npm run start`
+   - Build Command: `bun install`
+   - Start Command: `bun run start`
 3. Set env vars in Render (mark secrets as Secret):
    - `APP_PRIVATE_DATA`
    - `JWT_SECRET`
